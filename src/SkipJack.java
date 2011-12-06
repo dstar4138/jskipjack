@@ -48,7 +48,8 @@ public class SkipJack {
     }
 
     // Forward G, for encryption. Inverse it if you are decrypting.
-    private static long G( int step, byte[] key, long w, boolean inverse = false ){
+    private static long G( int step, byte[] key, long w ){ return G( step, key, w, false ); }
+    private static long G( int step, byte[] key, long w, boolean inverse ){
         long g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
         g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0L;
 
@@ -65,12 +66,12 @@ public class SkipJack {
         cv2=inverse?key[step+1]:key[step+2];
         cv3=inverse?key[step+0]:key[step+3];
 
-        g_3 = F[(int) g_2^cv0] ^ g_1;
-        g_4 = F[(int) g_3^cv1] ^ g_2;
-        g_5 = F[(int) g_4^cv2] ^ g_3;
-        g_6 = F[(int) g_5^cv3] ^ g_4;
+        g_3 = F[(int) (g_2^cv0)] ^ g_1;
+        g_4 = F[(int) (g_3^cv1)] ^ g_2;
+        g_5 = F[(int) (g_4^cv2)] ^ g_3;
+        g_6 = F[(int) (g_5^cv3)] ^ g_4;
 
-        return g_5<<4|g_6;
+        return (g_5 << 4) | g_6;
     }
 
     // F-Table
