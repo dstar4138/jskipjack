@@ -1,8 +1,39 @@
-
-
+/*
+    SKIPJACK - 
+        64bit Cookbook version, 80bit key.
+*/
 public class SkipJack {
     public static String Encrypt( String key, String message ){
-        return "";
+        long state = 0L; //TODO: turn message into chunks of 64 bit blocks.
+        String ret = "";
+        byte[] bytekey = new byte[10];
+
+        // for each of the blocks {
+            int stepcounter = 1;
+            while( stepcounter < 9 ){ // 8 rounds of rule A.
+                state = roundA( stepcounter, bytekey, state );
+                stepcounter ++;
+            }
+            while( stepcounter < 17 ){ // 8 rounds of rule B.
+                state = roundB( stepcounter, bytekey, state );
+                stepcounter ++;
+            }
+
+            // do that same thing again. Thus 32 rounds.
+            while( stepcounter < 25 ){
+                state = roundA( stepcounter, bytekey, state );
+                stepcounter ++;
+            }
+            while( stepcounter < 33 ){
+                state = roundB( stepcounter, bytekey, state );
+                stepcounter ++;
+            }
+
+       
+            //TODO: push 'state' onto 'ret'.
+        // }
+        
+        return ret;        
     }
 
     public static String Decrypt( String key, String message ){
@@ -61,6 +92,7 @@ public class SkipJack {
             g_2=tmp;
         }
     
+        //TODO: ARRAYS ARE ALWAYS OUT OF BOUNDS, how should be index and store key?
         cv0=inverse?key[step+3]:key[step+0];
         cv1=inverse?key[step+2]:key[step+1];
         cv2=inverse?key[step+1]:key[step+2];
