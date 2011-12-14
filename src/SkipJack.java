@@ -3,43 +3,31 @@
         64bit Cookbook version, 80bit key.
 */
 public class SkipJack {
-    public static String Encrypt( String key, String message ){
-        long state = 0L; //TODO: turn message into chunks of 64 bit blocks.
-        String ret = "";
-        byte[] bytekey = new byte[10];
+    public static long Encrypt( byte[] key, long message ){
+        long state = message;
 
-        // for each of the blocks {
-            int stepcounter = 1;
-            while( stepcounter < 9 ){ // 8 rounds of rule A.
-                state = roundA( stepcounter, bytekey, state );
-                stepcounter ++;
-            }
-            while( stepcounter < 17 ){ // 8 rounds of rule B.
-                state = roundB( stepcounter, bytekey, state );
-                stepcounter ++;
-            }
+        int stepcounter = 0;//k starts at 0
+        while( stepcounter < 8 ){ // 8 rounds of rule A.
+            state = roundA( stepcounter, key, state );
+            stepcounter ++;
+        }
+        while( stepcounter < 16 ){ // 8 rounds of rule B.
+            state = roundB( stepcounter, key, state );
+            stepcounter ++;
+        }
 
-            // do that same thing again. Thus 32 rounds.
-            while( stepcounter < 25 ){
-                state = roundA( stepcounter, bytekey, state );
-                stepcounter ++;
-            }
-            while( stepcounter < 33 ){
-                state = roundB( stepcounter, bytekey, state );
-                stepcounter ++;
-            }
+        // do that same thing again. Thus 32 rounds.
+        while( stepcounter < 24 ){
+            state = roundA( stepcounter, key, state );
+            stepcounter ++;
+        }
+        while( stepcounter < 32 ){
+            state = roundB( stepcounter, key, state );
+            stepcounter ++;
+        }
 
-       
-            //TODO: push 'state' onto 'ret'.
-        // }
-        
         return ret;        
     }
-
-    public static String Decrypt( String key, String message ){
-        return "";
-    }
-
 
     private static long roundA( int step, byte[] key, long block ){
         long w_1i, w_2i, w_3i, w_4i;
@@ -92,11 +80,10 @@ public class SkipJack {
             g_2=tmp;
         }
     
-        //TODO: ARRAYS ARE ALWAYS OUT OF BOUNDS, how should be index and store key?
-        cv0=inverse?key[step+3]:key[step+0];
-        cv1=inverse?key[step+2]:key[step+1];
-        cv2=inverse?key[step+1]:key[step+2];
-        cv3=inverse?key[step+0]:key[step+3];
+        cv0=inverse?key[step/8 +3]:key[step/8 +0];
+        cv1=inverse?key[step/8 +2]:key[step/8 +1];
+        cv2=inverse?key[step/8 +1]:key[step/8 +2];
+        cv3=inverse?key[step/8 +0]:key[step/8 +3];
 
         g_3 = F[(int) (g_2^cv0)] ^ g_1;
         g_4 = F[(int) (g_3^cv1)] ^ g_2;
@@ -113,7 +100,7 @@ public class SkipJack {
         0x0a,0xdf,0x02,0xa0,0x17,0xf1,0x60,0x68,0x12,0xb7,0x7a,0xc3,0xe9,0xfa,0x3d,0x53,
         0x96,0x84,0x6b,0xba,0xf2,0x63,0x9a,0x19,0x7c,0xae,0xe5,0xf5,0xf7,0x16,0x6a,0xa2,
         0x39,0xb6,0x7b,0x0f,0xc1,0x93,0x81,0x1b,0xee,0xb4,0x1a,0xea,0xd0,0x91,0x2f,0xb8,
-        0x55,0xb9,0xda,0x85,0x3f,0x41,0xb,0xfe,0x05,0xa5,0x88,0x05f,0x66,0x0b,0xd8,0x90,        
+        0x55,0xb9,0xda,0x85,0x3f,0x41,0xbf,0xe0,0x5a,0x58,0x80,0x5f,0x66,0x0b,0xd8,0x90,        
         0x35,0xd5,0xc0,0xa7,0x33,0x06,0x65,0x69,0x45,0x00,0x94,0x56,0x6d,0x98,0x9b,0x76,
         0x97,0xfc,0xb2,0xc2,0xb0,0xfe,0xdb,0x20,0xe1,0xeb,0xd6,0xe4,0xdd,0x47,0x4a,0x1d,
         0x42,0xed,0x9e,0x6e,0x49,0x3c,0xcd,0x43,0x27,0xd2,0x07,0xd4,0xde,0xc7,0x67,0x18,

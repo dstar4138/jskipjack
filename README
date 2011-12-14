@@ -6,7 +6,7 @@ Class: Cryptography (4003-482 - http://cs.rit.edu/~ark/482)
 -- Description: --
 
 For a class project our goal was to implement a cipher of our choice in 
-whatever language we would like to. We chose the NSA's SkipJack Cipher,
+whatever language we would like to. We chose the NIST's SkipJack Cipher,
 particularly the standard 64-bit ECB cipher.
 
 
