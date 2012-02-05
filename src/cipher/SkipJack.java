@@ -1,100 +1,105 @@
+package cipher;
 /*
     SKIPJACK - 
         64bit Cookbook version, 80bit key.
 */
 public class SkipJack {
-    public static long Encrypt( byte[] key, long message ){
+    public static long Encrypt( short[] key, long message ){
         long state = message;
 
         int stepcounter = 0;//k starts at 0
         while( stepcounter < 8 ){ // 8 rounds of rule A.
             state = roundA( stepcounter, key, state );
+    		System.out.printf("%016x%n", state);
             stepcounter ++;
         }
         while( stepcounter < 16 ){ // 8 rounds of rule B.
             state = roundB( stepcounter, key, state );
+    		System.out.printf("%016x%n", state);
             stepcounter ++;
         }
 
         // do that same thing again. Thus 32 rounds.
         while( stepcounter < 24 ){
             state = roundA( stepcounter, key, state );
+    		System.out.printf("%016x%n", state);
             stepcounter ++;
         }
         while( stepcounter < 32 ){
             state = roundB( stepcounter, key, state );
+    		System.out.printf("%016x%n", state);
             stepcounter ++;
         }
 
-        return ret;        
+        return state;        
     }
 
-    private static long roundA( int step, byte[] key, long block ){
+    private static long roundA( int step, short[] key, long block ){
         long w_1i, w_2i, w_3i, w_4i;
         long w_1o, w_2o, w_3o, w_4o;
         w_1i = w_2i = w_3i = w_4i = w_1o = w_2o = w_3o = w_4o = 0L;
 
-        w_1i = block & 0x000000000000FFFFL;
-        w_2i = (block >> 4) & 0x000000000000FFFFL;
-        w_3i = (block >> 8) & 0x000000000000FFFFL;
-        w_4i = (block >> 12) & 0x000000000000FFFFL;
+        w_1i = (block >>> 48);
+        w_2i = (block >> 32) & 0xFFFFL;
+        w_3i = (block >> 16) & 0xFFFFL;
+        w_4i = (block & 0xFFFFL);
 
-        w_1o = G( step, key, w_1i ) ^ w_4i ^ step;
+        w_1o = G( step, key, w_1i ) ^ w_4i ^ (step + 1);
         w_2o = G( step, key, w_1i ); 
         w_3o = w_2i;
         w_4o = w_3i;
 
-       long ret = w_4o << 12 | w_3o << 8 | w_2o << 4 | w_1o;
+       long ret = w_1o << 48 | w_2o << 32 | w_3o << 16 | w_4o;
        return ret;
     }
-    private static long roundB( int step, byte[] key, long block ){
+    private static long roundB( int step, short[] key, long block ){
         long w_1i, w_2i, w_3i, w_4i;
         long w_1o, w_2o, w_3o, w_4o;
-        w_1i = w_2i = w_3i = w_4i = w_1o = w_2o = w_3o = w_4o = 0L;
+        w_1i = w_2i = w_3i = w_4i = w_1o = w_2o = w_3o = w_4o = 0;
 
-        w_1i = block & 0x000000000000FFFFL;
-        w_2i = (block >> 4) & 0x000000000000FFFFL;
-        w_3i = (block >> 8) & 0x000000000000FFFFL;
-        w_4i = (block >> 12) & 0x000000000000FFFFL;
+        w_1i = (int)(block >>> 48);
+        w_2i = (int)((block >> 32) & 0xFFFFL);
+        w_3i = (int)((block >> 16) & 0xFFFFL);
+        w_4i = (int)(block & 0xFFFFL);
 
         w_1o = w_4i; 
         w_2o = G( step, key, w_1i );
-        w_3o = w_1i ^ w_2i ^ step;
+        w_3o = w_1i ^ w_2i ^ (step + 1);
         w_4o = w_3i;
 
-       long ret = w_4o << 12 | w_3o << 8 | w_2o << 4 | w_1o;
-       return ret;       
+        long ret = w_1o << 48 | w_2o << 32 | w_3o << 16 | w_4o;
+        return ret;       
     }
 
     // Forward G, for encryption. Inverse it if you are decrypting.
-    private static long G( int step, byte[] key, long w ){ return G( step, key, w, false ); }
-    private static long G( int step, byte[] key, long w, boolean inverse ){
-        long g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
-        g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0L;
+    private static long G( int step, short[] key, long w ){ return G( step, key, w, false ); }
+    private static long G( int step, short[] key, long w, boolean inverse ){
+        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0;
 
-        g_1=(w>>4)&0x000000000000FFFFL;
-        g_2=w&0x000000000000FFFFL;
+        g_1=(short) (w >>> 8);
+        g_2=(short) (w & 0xFF);
         if(inverse){
-            long tmp=g_1;
+            short tmp=g_1;
             g_1=g_2;
             g_2=tmp;
         }
     
-        cv0=inverse?key[step/8 +3]:key[step/8 +0];
-        cv1=inverse?key[step/8 +2]:key[step/8 +1];
-        cv2=inverse?key[step/8 +1]:key[step/8 +2];
-        cv3=inverse?key[step/8 +0]:key[step/8 +3];
+        cv0=inverse?key[(step * 4 + 3) % 10]:key[(step * 4) % 10];
+        cv1=inverse?key[(step * 4 + 2) % 10]:key[(step * 4 + 1) % 10];
+        cv2=inverse?key[(step * 4 + 1) % 10]:key[(step * 4 + 2) % 10];
+        cv3=inverse?key[(step * 4) % 10]:key[(step * 4 + 3) % 10];
 
-        g_3 = F[(int) (g_2^cv0)] ^ g_1;
-        g_4 = F[(int) (g_3^cv1)] ^ g_2;
-        g_5 = F[(int) (g_4^cv2)] ^ g_3;
-        g_6 = F[(int) (g_5^cv3)] ^ g_4;
+        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
 
-        return (g_5 << 4) | g_6;
+        return ((long)g_5 << 8) | g_6;
     }
 
     // F-Table
-    private static final long[] F = new long[]{
+    private static final short[] F = new short[]{
         0xa3,0xd7,0x09,0x83,0xf8,0x48,0xf6,0xf4,0xb3,0x21,0x15,0x78,0x99,0xb1,0xaf,0xf9,
         0xe7,0x2d,0x4d,0x8a,0xce,0x4c,0xca,0x2e,0x52,0x95,0xd9,0x1e,0x4e,0x38,0x44,0x28,
         0x0a,0xdf,0x02,0xa0,0x17,0xf1,0x60,0x68,0x12,0xb7,0x7a,0xc3,0xe9,0xfa,0x3d,0x53,
