@@ -1,3 +1,4 @@
+package tests;
 /**
     Simple test runner, to run all of our unit tests.
 **/

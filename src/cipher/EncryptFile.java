@@ -1,3 +1,4 @@
+package cipher;
 public class EncryptFile{
     private static byte[] string2bytes(int size, String str){
         return null; //TODO: make our 80 byte key from string into a handy byte array
