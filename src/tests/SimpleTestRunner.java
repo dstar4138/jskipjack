@@ -1,8 +1,7 @@
 package tests;
-import java.math.BigInteger;
-import java.util.Arrays;
 
-import cipher.SkipJack; 
+import java.math.BigInteger;
+import cipher.*;
 
 public class SimpleTestRunner {
 
@@ -19,8 +18,14 @@ public class SimpleTestRunner {
 		for(int i=0,j=9; i<10; ++i,--j){
 			key[j]= k.shiftRight(i*8).and(MASK).shortValue();
 		}
-	
-		System.out.println("key="+Arrays.toString(key));
-		System.out.printf("Ciphertext: %016x%n",SkipJack.Encrypt(key, message));
+		
+		
+		long t1 = System.currentTimeMillis();
+		for(int i=0; i< 100000; i++){ SkipJack.Encrypt(key, message); }
+		long t2 = System.currentTimeMillis();
+		for(int i=0; i< 100000; i++){ FastSkipJack.Encrypt(key, message); }
+		long t3 = System.currentTimeMillis();
+		System.out.printf("Slow: Time=%d msecs%n", t2-t1);
+		System.out.printf("Fast: Time=%d msecs%n", t3-t2);
 	}
 }

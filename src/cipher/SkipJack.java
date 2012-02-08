@@ -6,66 +6,28 @@ package cipher;
 public class SkipJack {
     public static long Encrypt( short[] key, long message ){
         long state = message;
-        System.out.printf("0\t%016x%n", state);
 
         int stepcounter = 0;//k starts at 0
         while( stepcounter < 8 ){ // 8 rounds of rule A.
             state = roundA( stepcounter, key, state );
-    		System.out.printf("%d\t%016x%n", stepcounter+1, state);
             stepcounter ++;
         }
         while( stepcounter < 16 ){ // 8 rounds of rule B.
             state = roundB( stepcounter, key, state );
-            System.out.printf("%d\t%016x%n", stepcounter+1, state);
             stepcounter ++;
         }
 
         // do that same thing again. Thus 32 rounds.
         while( stepcounter < 24 ){
             state = roundA( stepcounter, key, state );
-            System.out.printf("%d\t%016x%n", stepcounter+1, state);
             stepcounter ++;
         }
         while( stepcounter < 32 ){
             state = roundB( stepcounter, key, state );
-            System.out.printf("%d\t%016x%n", stepcounter+1, state);
             stepcounter ++;
         }
 
         return state;        
-    }
-
-    public static String printBinary(String arg){
-    	
-        // read in the command-line argument
-        long n = Long.parseLong(arg);
-        String s = "";
-
-        // set v to the largest power of two that is <= n
-        long v = 1L;
-        while (v <= n/2) {
-            v = v * 2;
-        }
-  
-        // check for presence of powers of 2 in n, from largest to smallest
-        while (v > 0) {
-
-            // v is not present in n 
-            if (n < v) {
-                s+="0";
-            }
-
-            // v is present in n, so remove v from n
-            else {
-                s+="1";
-                n = n - v;
-            }
-
-            // next smallest power of 2
-            v = v / 2;
-        }
-
-        return s;
     }
     
     private static long roundA( int step, short[] key, long block ){
@@ -105,40 +67,22 @@ public class SkipJack {
         return ret;       
     }
 
-    // Forward G, for encryption. Inverse it if you are decrypting.
-    private static long G( int step, short[] key, long w ){ return G( step, key, w, false ); }
-    private static long G( int step, short[] key, long w, boolean inverse ){
+    private static long G( int step, short[] key, long w ){
         short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
         g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0;
 
         g_1=(short) (w >>> 8);
-        //System.out.println("w="+printBinary(""+w)+", g_1="+printBinary(""+g_1));
         g_2=(short) (w & 0xFF);
-        //System.out.println("w="+printBinary(""+w)+", g_2="+printBinary(""+g_2));
-        if(inverse){
-            short tmp=g_1;
-            g_1=g_2;
-            g_2=tmp;
-        }
     
-        cv0=inverse?key[(step * 4 + 3) % 10]:key[(step * 4 + 0) % 10];
-        //System.out.println("cv_4k="+(step*4)+", k="+cv0);
-        cv1=inverse?key[(step * 4 + 2) % 10]:key[(step * 4 + 1) % 10];
-        //System.out.println("cv_4k+1="+(step*4 + 1)+", k="+cv1);
-        cv2=inverse?key[(step * 4 + 1) % 10]:key[(step * 4 + 2) % 10];
-        //System.out.println("cv_4k+2="+(step*4 + 2)+", k="+cv2);
-        cv3=inverse?key[(step * 4 + 0) % 10]:key[(step * 4 + 3) % 10];
-        //System.out.println("cv_4k+3="+(step*4 + 3)+", k="+cv3);
+        cv0=key[(step * 4) % 10];
+        cv1=key[(step * 4 + 1) % 10];
+        cv2=key[(step * 4 + 2) % 10];
+        cv3=key[(step * 4 + 3) % 10];
 
         g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
-        //System.out.printf("\tg_3=f(g_2+cv0)+g_1=f(%d+%d)+%d=%d+%d=%d%n",g_2,cv0,g_1,F[g_2 ^ cv0],g_1,g_3);
         g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
-        //System.out.printf("\tg_4=f(g_3+cv1)+g_2=f(%d+%d)+%d=%d+%d=%d%n",g_3,cv1,g_2,F[g_3 ^ cv1],g_2,g_4);
         g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
-        //System.out.printf("\tg_5=f(g_4+cv2)+g_3=f(%d+%d)+%d=%d+%d=%d=%s%n",g_4,cv2,g_3,F[g_4 ^ cv2],g_3,g_5,printBinary(""+g_5));
         g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
-        //System.out.printf("\tg_6=f(g_5+cv3)+g_4=f(%d+%d)+%d=%d+%d=%d=%s%n",g_5,cv3,g_4,F[g_5 ^ cv3],g_4,g_6,printBinary(""+g_6));
-        //System.out.println(printBinary(""+(((long)g_5 << 8) | g_6)));
         
         return ((long)g_5 << 8) | g_6;
     }
