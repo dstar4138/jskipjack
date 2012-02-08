@@ -30,6 +30,32 @@ public class SkipJack {
         return state;        
     }
     
+    public static long Decrypt( short[] key, long message ){
+        long state = message;
+
+        int stepcounter = 31;//k starts at 31
+        while( stepcounter > 23 ){ // 8 rounds of rule B.
+            state = roundBprime( stepcounter, key, state );
+            stepcounter --;
+        }
+        while( stepcounter > 15 ){ // 8 rounds of rule A.
+            state = roundAprime( stepcounter, key, state );
+            stepcounter --;
+        }
+
+        // do that same thing again. Thus 32 rounds.
+        while( stepcounter > 7 ){
+            state = roundBprime( stepcounter, key, state );
+            stepcounter --;
+        }
+        while( stepcounter > -1 ){
+            state = roundAprime( stepcounter, key, state );
+            stepcounter --;
+        }
+
+        return state; 
+    }
+    
     private static long roundA( int step, short[] key, long block ){
         long w_1i, w_2i, w_3i, w_4i;
         long w_1o, w_2o, w_3o, w_4o;
@@ -67,6 +93,43 @@ public class SkipJack {
         return ret;       
     }
 
+    private static long roundAprime( int step, short[] key, long block ){
+        long w_1i, w_2i, w_3i, w_4i;
+        long w_1o, w_2o, w_3o, w_4o;
+        w_1i = w_2i = w_3i = w_4i = w_1o = w_2o = w_3o = w_4o = 0L;
+
+        w_1i = (block >>> 48);
+        w_2i = (block >> 32) & 0xFFFFL;
+        w_3i = (block >> 16) & 0xFFFFL;
+        w_4i = (block & 0xFFFFL);
+
+        w_1o = Gprime( step, key, w_2i );
+        w_2o = w_3i; 
+        w_3o = w_4i;
+        w_4o = w_1i ^ w_2i ^ (step+1);
+
+       long ret = w_1o << 48 | w_2o << 32 | w_3o << 16 | w_4o;
+       return ret;
+    }
+    private static long roundBprime( int step, short[] key, long block ){
+        long w_1i, w_2i, w_3i, w_4i;
+        long w_1o, w_2o, w_3o, w_4o;
+        w_1i = w_2i = w_3i = w_4i = w_1o = w_2o = w_3o = w_4o = 0;
+
+        w_1i = (int)(block >>> 48);
+        w_2i = (int)((block >> 32) & 0xFFFFL);
+        w_3i = (int)((block >> 16) & 0xFFFFL);
+        w_4i = (int)(block & 0xFFFFL);
+
+        w_1o = Gprime( step, key, w_2i ); 
+        w_2o = Gprime( step, key, w_2i ) ^ w_3i ^ (step + 1);
+        w_3o = w_4i;
+        w_4o = w_1i;
+
+        long ret = w_1o << 48 | w_2o << 32 | w_3o << 16 | w_4o;
+        return ret;       
+    }
+    
     private static long G( int step, short[] key, long w ){
         short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
         g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0;
@@ -85,6 +148,25 @@ public class SkipJack {
         g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
         
         return ((long)g_5 << 8) | g_6;
+    }  
+    private static long Gprime( int step, short[] key, long w ){
+        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0;
+
+        g_1=(short) (w & 0xFF);
+        g_2=(short) (w >>> 8);
+        
+        cv0=key[(step * 4 + 3) % 10];
+        cv1=key[(step * 4 + 2) % 10];
+        cv2=key[(step * 4 + 1) % 10];
+        cv3=key[(step * 4) % 10];
+
+        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        
+        return ((long)g_6 << 8) | g_5;
     }
 
     // F-Table

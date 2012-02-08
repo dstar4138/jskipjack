@@ -21,11 +21,17 @@ public class SimpleTestRunner {
 		
 		
 		long t1 = System.currentTimeMillis();
-		for(int i=0; i< 100000; i++){ SkipJack.Encrypt(key, message); }
+		for(int i=0; i< 1000; i++){ SkipJack.Encrypt(key, message); }
 		long t2 = System.currentTimeMillis();
-		for(int i=0; i< 100000; i++){ FastSkipJack.Encrypt(key, message); }
+		for(int i=0; i< 1000; i++){ FastSkipJack.Encrypt(key, message); }
 		long t3 = System.currentTimeMillis();
 		System.out.printf("Slow: Time=%d msecs%n", t2-t1);
 		System.out.printf("Fast: Time=%d msecs%n", t3-t2);
+		
+		long dc1 = SkipJack.Decrypt(key, SkipJack.Encrypt(key, message));
+		long dc2 = FastSkipJack.Decrypt(key, FastSkipJack.Encrypt(key, message));
+		System.out.printf("SlowD: %016x ?= %016x%n", message, dc1);
+		System.out.printf("FastD: %016x ?= %016x"  , message, dc2);
+		
 	}
 }

@@ -3,13 +3,13 @@ package cipher;
 import java.math.BigInteger;
 import java.io.*;
 
-public class EncryptFile{
+public class DecryptFile{
 
 	private static BigInteger MASK = new BigInteger("FF", 16);
 	
     public static void main( String[] args ) throws Exception{
     	if(args.length != 3){
-    		System.out.println("Usage: java EncryptFile <key> <inputfile> <outputfile>");
+    		System.out.println("Usage: java DecryptFile <key> <inputfile> <outputfile>");
     		System.exit(1);
     	}
     	
@@ -35,7 +35,7 @@ public class EncryptFile{
 		// Read in blocks from the file until there are no more.
 	    try{
 	    	while (true){
-	    		out.writeLong(SkipJack.Encrypt(key, in.readLong()));
+	    		out.writeLong(SkipJack.Decrypt(key, in.readLong()));
 	    	}
 	    }catch(EOFException e){
 	    	// There is a possibility that it didn't grab everything.
@@ -44,7 +44,7 @@ public class EncryptFile{
 	    	try{
 	    		while(true){ b=in.readByte(); block=block<<8; block|=b; }
 	    	}catch(EOFException e2){}
-	    	out.writeLong(block);
+	    	out.writeLong(SkipJack.Decrypt(key,block));
 	    }
 
 	    in.close();

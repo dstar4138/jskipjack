@@ -11,6 +11,13 @@ public class FastSkipJack {
         }
         return state;        
     }
+    public static long Decrypt( short[] key, long message ){
+    	long state = message;
+        for( int step=31; step>=0; --step){
+        	state=roundPrime(step,key,state);
+        }
+        return state;
+    }
     
     private static long round( int step, short[] key, long block){
     	long w_1i, w_2i, w_3i, w_4i, w_2o;
@@ -36,12 +43,44 @@ public class FastSkipJack {
         g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
         g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
         g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
-        w_2o = ((long)g_5 << 8) | g_6;
+        w_2o = ((long)g_6 << 8) | g_5;
         
     	if(step<8||(step>15&&step<24)){//if its round A
             return (w_2o ^ w_4i ^ (step + 1)) << 48 | w_2o << 32 | w_2i << 16 | w_3i;
     	}else{
             return w_4i << 48 | w_2o << 32 | (w_1i ^ w_2i ^ (step + 1)) << 16 | w_3i;
+    	}
+    }
+    private static long roundPrime( int step, short[] key, long block){
+    	long w_1i, w_2i, w_3i, w_4i, w_2o;
+        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+
+        w_1i = w_2i = w_3i = w_4i = w_2o  = 0;
+        g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0;
+        
+        int stepmod=step*4;
+        cv0=key[(stepmod + 3) % 10];
+        cv1=key[(stepmod + 2) % 10];
+        cv2=key[(stepmod + 1) % 10];
+        cv3=key[(stepmod) % 10];
+
+        w_1i = (int)(block >>> 48);
+        w_2i = (int)((block >> 32) & 0xFFFFL);
+        w_3i = (int)((block >> 16) & 0xFFFFL);
+        w_4i = (int)(block & 0xFFFFL);
+        
+        g_1 = (short) (w_2i & 0xFF);
+        g_2 = (short) (w_2i >>> 8);     
+        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        w_2o = ((long)g_6 << 8) | g_5;
+        
+    	if(step<8||(step>15&&step<24)){//if its round A
+    	    return w_2o << 48 | w_3i << 32 | w_4i << 16 | (w_1i ^ w_2i ^ (step+1));
+    	}else{
+            return w_2o << 48 | (w_2o ^ w_3i ^ (step + 1)) << 32 | w_4i << 16 | w_1i;
     	}
     }
 
