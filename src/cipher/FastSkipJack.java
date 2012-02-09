@@ -4,21 +4,106 @@ package cipher;
         64bit Cookbook version, 80bit key.
 */
 public class FastSkipJack {
+	
+	long word1, word2, word3, word4;
+	short[] key;
+	
+	public FastSkipJack( short[] key ){
+		this.key = key;
+	}
+	public long Encrypt( long message ){
+		word1 = (message >>> 48);
+        word2 = (message >> 32) & 0xFFFFL;
+        word3 = (message >> 16) & 0xFFFFL;
+        word4 = (message & 0xFFFFL);
+        for( int step=0; step<32; ++step){
+        	round(step);
+        }
+        return word1 <<48 | word2 <<32 | word3 <<16 | word4;
+	}
+    public long Decrypt( long message ){
+    	word1 = (message >>> 48);
+        word2 = (message >> 32) & 0xFFFFL;
+        word3 = (message >> 16) & 0xFFFFL;
+        word4 = (message & 0xFFFFL);
+        for( int step=31; step>=0; --step){
+        	roundPrime(step);
+        }
+        return word1 <<48 | word2 <<32 | word3 <<16 | word4;
+    }
+	private void round( int step ){
+    	long gg;
+        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        
+        int stepmod=step*4;
+        cv0=key[(stepmod) % 10];
+        cv1=key[(stepmod + 1) % 10];
+        cv2=key[(stepmod + 2) % 10];
+        cv3=key[(stepmod + 3) % 10];
+
+        g_1 = (short) (word1 >>> 8);
+        g_2 = (short) (word1 & 0xFF);     
+        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        gg = ((long)g_5 << 8) | g_6;
+        
+    	if(step<8||(step>15&&step<24)){//if its round A
+            word1 = (gg ^ word4 ^ (step + 1));
+            word4 = word3;
+            word3 = word2;
+            word2 = gg;
+    	}else{
+    		long old1 = word1;
+            word1 = word4;
+            word4 = word3;
+            word3 = (old1 ^ word2 ^ (step + 1));
+            word2 = gg; 
+    	}
+    }
+	private void roundPrime( int step ){
+    	long  gg;
+        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        
+        int stepmod=step*4;
+        cv0=key[(stepmod + 3) % 10];
+        cv1=key[(stepmod + 2) % 10];
+        cv2=key[(stepmod + 1) % 10];
+        cv3=key[(stepmod) % 10];
+        
+        g_1 = (short) (word2 & 0xFF);
+        g_2 = (short) (word2 >>> 8);     
+        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        gg = ((long)g_6 << 8) | g_5;
+        
+    	if(step<8||(step>15&&step<24)){//if its round A
+    		long old4 =word4;
+    		word4 = (word1 ^ word2 ^ (step+1));
+    		word1 = gg;
+    		word2 = word3;
+    		word3 = old4;
+    	}else{
+    		long old1 = word1;
+    		word1 = gg;
+    		word2 = (gg ^ word3 ^ (step + 1));
+    		word3 = word4;
+    		word4 = old1;
+    	}
+	}
+	
+	/********* STATIC, SLOWER *********/
+	
     public static long Encrypt( short[] key, long message ){
         long state = message;
         for( int step=0; step<32; ++step){
-        	state=round(step,key,state);
+        	state = round(step, key, state);
         }
         return state;        
-    }
-    public static long Decrypt( short[] key, long message ){
-    	long state = message;
-        for( int step=31; step>=0; --step){
-        	state=roundPrime(step,key,state);
-        }
-        return state;
-    }
-    
+    }      
     private static long round( int step, short[] key, long block){
     	long w_1i, w_2i, w_3i, w_4i, w_2o;
         short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
@@ -32,10 +117,10 @@ public class FastSkipJack {
         cv2=key[(stepmod + 2) % 10];
         cv3=key[(stepmod + 3) % 10];
 
-        w_1i = (int)(block >>> 48);
-        w_2i = (int)((block >> 32) & 0xFFFFL);
-        w_3i = (int)((block >> 16) & 0xFFFFL);
-        w_4i = (int)(block & 0xFFFFL);
+        w_1i = (block >>> 48);
+        w_2i = ((block >> 32) & 0xFFFFL);
+        w_3i = ((block >> 16) & 0xFFFFL);
+        w_4i = (block & 0xFFFFL);
         
         g_1 = (short) (w_1i >>> 8);
         g_2 = (short) (w_1i & 0xFF);     
@@ -43,13 +128,21 @@ public class FastSkipJack {
         g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
         g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
         g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
-        w_2o = ((long)g_6 << 8) | g_5;
+        w_2o = ((long)g_5 << 8) | g_6;
         
     	if(step<8||(step>15&&step<24)){//if its round A
             return (w_2o ^ w_4i ^ (step + 1)) << 48 | w_2o << 32 | w_2i << 16 | w_3i;
     	}else{
             return w_4i << 48 | w_2o << 32 | (w_1i ^ w_2i ^ (step + 1)) << 16 | w_3i;
     	}
+    }
+
+    public static long Decrypt( short[] key, long message ){
+    	long state = message;
+        for( int step=31; step>=0; --step){
+        	state=roundPrime(step,key,state);
+        }
+        return state;
     }
     private static long roundPrime( int step, short[] key, long block){
     	long w_1i, w_2i, w_3i, w_4i, w_2o;
@@ -64,10 +157,10 @@ public class FastSkipJack {
         cv2=key[(stepmod + 1) % 10];
         cv3=key[(stepmod) % 10];
 
-        w_1i = (int)(block >>> 48);
-        w_2i = (int)((block >> 32) & 0xFFFFL);
-        w_3i = (int)((block >> 16) & 0xFFFFL);
-        w_4i = (int)(block & 0xFFFFL);
+        w_1i = (block >>> 48);
+        w_2i = ((block >> 32) & 0xFFFFL);
+        w_3i = ((block >> 16) & 0xFFFFL);
+        w_4i = (block & 0xFFFFL);
         
         g_1 = (short) (w_2i & 0xFF);
         g_2 = (short) (w_2i >>> 8);     

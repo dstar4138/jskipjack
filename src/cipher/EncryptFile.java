@@ -44,7 +44,7 @@ public class EncryptFile{
 	    	try{
 	    		while(true){ b=in.readByte(); block=block<<8; block|=b; }
 	    	}catch(EOFException e2){}
-	    	out.writeLong(block);
+	    	out.writeLong(SkipJack.Encrypt(key, block));
 	    }
 
 	    in.close();
