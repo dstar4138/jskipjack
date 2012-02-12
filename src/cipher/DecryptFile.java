@@ -14,7 +14,7 @@ public class DecryptFile{
     	}
     	
     	// Read in arguments.
-    	BigInteger k = new BigInteger(args[1],16);
+    	BigInteger k = new BigInteger(args[0],16);
         File input = new File (args[1]);
         File output = new File (args[2]);
         
@@ -38,13 +38,10 @@ public class DecryptFile{
 	    		out.writeLong(SkipJack.Decrypt(key, in.readLong()));
 	    	}
 	    }catch(EOFException e){
-	    	// There is a possibility that it didn't grab everything.
-	    	long block=0;
-	    	byte b=0;
-	    	try{
-	    		while(true){ b=in.readByte(); block=block<<8; block|=b; }
-	    	}catch(EOFException e2){}
-	    	out.writeLong(SkipJack.Decrypt(key,block));
+	    	/* Because the input for this is supposed to be 64 bits, this should be the end.
+	    	 * Discovery: DataInputStream does not alow moving backward.
+	    	 * Must find way to remove padding.
+	    	 */
 	    }
 
 	    in.close();
