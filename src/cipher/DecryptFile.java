@@ -1,6 +1,7 @@
 package cipher;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.io.*;
 
 public class DecryptFile{
@@ -33,15 +34,23 @@ public class DecryptFile{
 		}
 		
 		// Read in blocks from the file until there are no more.
+		// Decrypt must catch the last block, so only write
+		// when the next block is seen.
+		long thisBlock = 0;
+		long nextBlock = 0;
 	    try{
+	    	thisBlock = in.readLong();
 	    	while (true){
-	    		out.writeLong(SkipJack.Decrypt(key, in.readLong()));
+	    		nextBlock = in.readLong();
+	    		out.writeLong(SkipJack.Decrypt(key, thisBlock));
+	    		thisBlock = nextBlock;
 	    	}
 	    }catch(EOFException e){
-	    	/* Because the input for this is supposed to be 64 bits, this should be the end.
-	    	 * Discovery: DataInputStream does not alow moving backward.
-	    	 * Must find way to remove padding.
-	    	 */
+	    	// Remove padding
+	    	thisBlock = SkipJack.Decrypt(key, thisBlock);
+	    	int numDataBytes = 7 - (Long.numberOfTrailingZeros(thisBlock) / 8);
+	    	byte[] finalbytes = ByteBuffer.allocate(8).putLong(thisBlock).array();
+	    	out.write(finalbytes, 0, numDataBytes);
 	    }
 
 	    in.close();
