@@ -1,6 +1,7 @@
 package cipher;
 
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.io.*;
 
 public class DecryptFile{
@@ -14,7 +15,7 @@ public class DecryptFile{
     	}
     	
     	// Read in arguments.
-    	BigInteger k = new BigInteger(args[1],16);
+    	BigInteger k = new BigInteger(args[0],16);
         File input = new File (args[1]);
         File output = new File (args[2]);
         
@@ -33,18 +34,23 @@ public class DecryptFile{
 		}
 		
 		// Read in blocks from the file until there are no more.
+		// Decrypt must catch the last block, so only write
+		// when the next block is seen.
+		long thisBlock = 0;
+		long nextBlock = 0;
 	    try{
+	    	thisBlock = in.readLong();
 	    	while (true){
-	    		out.writeLong(SkipJack.Decrypt(key, in.readLong()));
+	    		nextBlock = in.readLong();
+	    		out.writeLong(SkipJack.Decrypt(key, thisBlock));
+	    		thisBlock = nextBlock;
 	    	}
 	    }catch(EOFException e){
-	    	// There is a possibility that it didn't grab everything.
-	    	long block=0;
-	    	byte b=0;
-	    	try{
-	    		while(true){ b=in.readByte(); block=block<<8; block|=b; }
-	    	}catch(EOFException e2){}
-	    	out.writeLong(SkipJack.Decrypt(key,block));
+	    	// Remove padding
+	    	thisBlock = SkipJack.Decrypt(key, thisBlock);
+	    	int numDataBytes = 7 - (Long.numberOfTrailingZeros(thisBlock) / 8);
+	    	byte[] finalbytes = ByteBuffer.allocate(8).putLong(thisBlock).array();
+	    	out.write(finalbytes, 0, numDataBytes);
 	    }
 
 	    in.close();

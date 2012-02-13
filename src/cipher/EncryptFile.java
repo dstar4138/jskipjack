@@ -14,7 +14,7 @@ public class EncryptFile{
     	}
     	
     	// Read in arguments.
-    	BigInteger k = new BigInteger(args[1],16);
+    	BigInteger k = new BigInteger(args[0],16);
         File input = new File (args[1]);
         File output = new File (args[2]);
         
@@ -41,9 +41,17 @@ public class EncryptFile{
 	    	// There is a possibility that it didn't grab everything.
 	    	long block=0;
 	    	byte b=0;
+	    	int counter = 0;
 	    	try{
-	    		while(true){ b=in.readByte(); block=block<<8; block|=b; }
+	    		while(true){ b=in.readByte(); block=block<<8; block|=b; ++counter; }
 	    	}catch(EOFException e2){}
+	    		block = block << 8;
+	    		block |= (byte)0x80;
+	    		++counter;
+	    		while (counter < 8) {
+	    			block = block << 8;
+	    			++counter;
+	    		}
 	    	out.writeLong(SkipJack.Encrypt(key, block));
 	    }
 
