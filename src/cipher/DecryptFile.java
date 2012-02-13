@@ -48,7 +48,7 @@ public class DecryptFile{
 	    }catch(EOFException e){
 	    	// Remove padding
 	    	thisBlock = SkipJack.Decrypt(key, thisBlock);
-	    	int numDataBytes = 8 - (Long.numberOfTrailingZeros(thisBlock) / 8);
+	    	int numDataBytes = 7 - (Long.numberOfTrailingZeros(thisBlock) / 8);
 	    	byte[] finalbytes = ByteBuffer.allocate(8).putLong(thisBlock).array();
 	    	out.write(finalbytes, 0, numDataBytes);
 	    }
