@@ -33,26 +33,29 @@ public class EncryptFile{
 		}
 		
 		// Read in blocks from the file until there are no more.
+		long block = 0;
+    	int counter = 0;
 	    try{
 	    	while (true){
-	    		out.writeLong(SkipJack.Encrypt(key, in.readLong()));
+	    		block |= in.readByte();
+	    		counter++;
+	    		if(counter==8){
+	    			out.writeLong(SkipJack.Encrypt(key, block));
+	    			counter=0; block=0;
+	    		}else{
+	    			block = block<<8;
+	    		}
 	    	}
 	    }catch(EOFException e){
 	    	// There is a possibility that it didn't grab everything.
-	    	long block=0;
-	    	byte b=0;
-	    	int counter = 0;
-	    	try{
-	    		while(true){ b=in.readByte(); block=block<<8; block|=b; ++counter; }
-	    	}catch(EOFException e2){}
-	    		block = block << 8;
-	    		block |= (byte)0x80;
-	    		++counter;
+	    	if(counter!=0){
+	    		counter++;
 	    		while (counter < 8) {
 	    			block = block << 8;
 	    			++counter;
 	    		}
-	    	out.writeLong(SkipJack.Encrypt(key, block));
+	    		out.writeLong(SkipJack.Encrypt(key, block));
+	    	}
 	    }
 
 	    in.close();
