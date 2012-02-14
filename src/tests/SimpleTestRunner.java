@@ -45,7 +45,7 @@ public class SimpleTestRunner {
 		long dc3 = skip1.Decrypt(skip1.Encrypt(message));
 		System.out.printf("SlowD: %016x ?= %016x%n", message, dc1);
 		System.out.printf("FastD: %016x ?= %016x%n"  , message, dc2);
-		System.out.printf("FasterD: %016x ?= %016x"  , message, dc3);
+		System.out.printf("FasterD: %016x ?= %016x%n"  , message, dc3);
 		
 	}
 }
