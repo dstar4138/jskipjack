@@ -1,4 +1,7 @@
 package cipher;
+
+import java.math.BigInteger;
+
 /*
     SKIPJACK - 
         64bit Cookbook version, 80bit key.
@@ -196,5 +199,25 @@ public class FastSkipJack {
     	0x08,0x77,0x11,0xbe,0x92,0x4f,0x24,0xc5,0x32,0x36,0x9d,0xcf,0xf3,0xa6,0xbb,0xac,
     	0x5e,0x6c,0xa9,0x13,0x57,0x25,0xb5,0xe3,0xbd,0xa8,0x3a,0x01,0x05,0x59,0x2a,0x46
     };
+    
+    
+    
+    public static void main( String[] args ){
+    	if(args.length != 2){
+    		System.out.println("Usage: java FastSkipJack <key> <plaintext>");
+    		System.exit(1);
+    	}
+    	BigInteger MASK = new BigInteger("FF", 16);
+		BigInteger k = new BigInteger(args[0],16);
+		long message = Long.valueOf(args[1], 16);
+		
+		int[] key = new int[10];
+		for(int i=0,j=9; i<10; ++i,--j){
+			key[j]= k.shiftRight(i*8).and(MASK).shortValue();
+		}
+    	
+		FastSkipJack fsj = new FastSkipJack(key);
+		System.out.println(fsj.Encrypt(message));
+    }
 }
 
