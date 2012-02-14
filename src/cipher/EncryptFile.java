@@ -37,7 +37,7 @@ public class EncryptFile{
     	int counter = 0;
 	    try{
 	    	while (true){
-	    		block |= in.readByte();
+	    		block |= in.readUnsignedByte();
 	    		counter++;
 	    		if(counter==8){
 	    			out.writeLong(SkipJack.Encrypt(key, block));
@@ -47,15 +47,14 @@ public class EncryptFile{
 	    		}
 	    	}
 	    }catch(EOFException e){
-	    	// There is a possibility that it didn't grab everything.
-	    	if(counter!=0){
-	    		counter++;
-	    		while (counter < 8) {
-	    			block = block << 8;
-	    			++counter;
-	    		}
-	    		out.writeLong(SkipJack.Encrypt(key, block));
+	    	// Add padding
+	    	block |= 0x80;
+	    	counter++;
+	    	while (counter < 8) {
+	    		block = block << 8;
+	    		++counter;
 	    	}
+	    	out.writeLong(SkipJack.Encrypt(key, block));
 	    }
 
 	    in.close();
