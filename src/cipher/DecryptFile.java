@@ -28,7 +28,7 @@ public class DecryptFile{
                    (new FileOutputStream (output));
         
         // Break key into 10 bytes.
-		short[] key = new short[10];
+		int[] key = new int[10];
 		for(int i=0,j=9; i<10; ++i,--j){
 			key[j]= k.shiftRight(i*8).and(MASK).shortValue();
 		}

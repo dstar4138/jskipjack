@@ -6,9 +6,9 @@ package cipher;
 public class FastSkipJack {
 	
 	long word1, word2, word3, word4;
-	short[] key;
+	int[] key;
 	
-	public FastSkipJack( short[] key ){
+	public FastSkipJack( int[] key ){
 		this.key = key;
 	}
 	public long Encrypt( long message ){
@@ -33,7 +33,7 @@ public class FastSkipJack {
     }
 	private void round( int step ){
     	long gg;
-        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        int g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
         
         int stepmod=step*4;
         cv0=key[(stepmod) % 10];
@@ -41,12 +41,12 @@ public class FastSkipJack {
         cv2=key[(stepmod + 2) % 10];
         cv3=key[(stepmod + 3) % 10];
 
-        g_1 = (short) (word1 >>> 8);
-        g_2 = (short) (word1 & 0xFF);     
-        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
-        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
-        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
-        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        g_1 = (int)(word1 >>> 8);
+        g_2 = (int)(word1 & 0xFF);     
+        g_3 = (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (F[g_5 ^ cv3] ^ g_4);
         gg = ((long)g_5 << 8) | g_6;
         
     	if(step<8||(step>15&&step<24)){//if its round A
@@ -64,7 +64,7 @@ public class FastSkipJack {
     }
 	private void roundPrime( int step ){
     	long  gg;
-        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        int g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
         
         int stepmod=step*4;
         cv0=key[(stepmod + 3) % 10];
@@ -72,12 +72,12 @@ public class FastSkipJack {
         cv2=key[(stepmod + 1) % 10];
         cv3=key[(stepmod) % 10];
         
-        g_1 = (short) (word2 & 0xFF);
-        g_2 = (short) (word2 >>> 8);     
-        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
-        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
-        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
-        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        g_1 = (int) (word2 & 0xFF);
+        g_2 = (int) (word2 >>> 8);     
+        g_3 = (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (F[g_5 ^ cv3] ^ g_4);
         gg = ((long)g_6 << 8) | g_5;
         
     	if(step<8||(step>15&&step<24)){//if its round A
@@ -97,16 +97,16 @@ public class FastSkipJack {
 	
 	/********* STATIC, SLOWER *********/
 	
-    public static long Encrypt( short[] key, long message ){
+    public static long Encrypt( int[] key, long message ){
         long state = message;
         for( int step=0; step<32; ++step){
         	state = round(step, key, state);
         }
         return state;        
     }      
-    private static long round( int step, short[] key, long block){
+    private static long round( int step, int[] key, long block){
     	long w_1i, w_2i, w_3i, w_4i, w_2o;
-        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        int g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
 
         w_1i = w_2i = w_3i = w_4i = w_2o  = 0;
         g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0;
@@ -122,12 +122,12 @@ public class FastSkipJack {
         w_3i = ((block >> 16) & 0xFFFFL);
         w_4i = (block & 0xFFFFL);
         
-        g_1 = (short) (w_1i >>> 8);
-        g_2 = (short) (w_1i & 0xFF);     
-        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
-        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
-        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
-        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        g_1 = (int) (w_1i >>> 8);
+        g_2 = (int) (w_1i & 0xFF);     
+        g_3 = (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (F[g_5 ^ cv3] ^ g_4);
         w_2o = ((long)g_5 << 8) | g_6;
         
     	if(step<8||(step>15&&step<24)){//if its round A
@@ -137,16 +137,16 @@ public class FastSkipJack {
     	}
     }
 
-    public static long Decrypt( short[] key, long message ){
+    public static long Decrypt( int[] key, long message ){
     	long state = message;
         for( int step=31; step>=0; --step){
         	state=roundPrime(step,key,state);
         }
         return state;
     }
-    private static long roundPrime( int step, short[] key, long block){
+    private static long roundPrime( int step, int[] key, long block){
     	long w_1i, w_2i, w_3i, w_4i, w_2o;
-        short g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
+        int g_1, g_2, g_3, g_4, g_5, g_6, cv0, cv1, cv2, cv3;
 
         w_1i = w_2i = w_3i = w_4i = w_2o  = 0;
         g_1 = g_2 = g_3 = g_4 = g_5 = g_6 = cv0 = cv1 = cv2 = cv3 = 0;
@@ -162,12 +162,12 @@ public class FastSkipJack {
         w_3i = ((block >> 16) & 0xFFFFL);
         w_4i = (block & 0xFFFFL);
         
-        g_1 = (short) (w_2i & 0xFF);
-        g_2 = (short) (w_2i >>> 8);     
-        g_3 = (short) (F[g_2 ^ cv0] ^ g_1);
-        g_4 = (short) (F[g_3 ^ cv1] ^ g_2);
-        g_5 = (short) (F[g_4 ^ cv2] ^ g_3);
-        g_6 = (short) (F[g_5 ^ cv3] ^ g_4);
+        g_1 = (int) (w_2i & 0xFF);
+        g_2 = (int) (w_2i >>> 8);     
+        g_3 = (F[g_2 ^ cv0] ^ g_1);
+        g_4 = (F[g_3 ^ cv1] ^ g_2);
+        g_5 = (F[g_4 ^ cv2] ^ g_3);
+        g_6 = (F[g_5 ^ cv3] ^ g_4);
         w_2o = ((long)g_6 << 8) | g_5;
         
     	if(step<8||(step>15&&step<24)){//if its round A
@@ -178,7 +178,7 @@ public class FastSkipJack {
     }
 
     // F-Table
-    public static final short[] F = new short[]{
+    public static final int[] F = new int[]{
     	0xa3,0xd7,0x09,0x83,0xf8,0x48,0xf6,0xf4,0xb3,0x21,0x15,0x78,0x99,0xb1,0xaf,0xf9,
     	0xe7,0x2d,0x4d,0x8a,0xce,0x4c,0xca,0x2e,0x52,0x95,0xd9,0x1e,0x4e,0x38,0x44,0x28,
     	0x0a,0xdf,0x02,0xa0,0x17,0xf1,0x60,0x68,0x12,0xb7,0x7a,0xc3,0xe9,0xfa,0x3d,0x53,

@@ -14,7 +14,7 @@ public class SimpleTestRunner {
 		long message = Long.valueOf(args[0], 16);
 		BigInteger k = new BigInteger(args[1],16);
 		
-		short[] key = new short[10];
+		int[] key = new int[10];
 		for(int i=0,j=9; i<10; ++i,--j){
 			key[j]= k.shiftRight(i*8).and(MASK).shortValue();
 		}

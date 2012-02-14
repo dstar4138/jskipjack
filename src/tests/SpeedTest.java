@@ -12,7 +12,7 @@ public class SpeedTest {
 			System.out.println("Usage: java SpeedTest <num_iterations>");
 		} else {
 			int n = Integer.parseInt(args[0]);
-			short[] key = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; 
+			int[] key = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}; 
 			FastSkipJack cipher = new FastSkipJack(key);
 		    long t1 = System.currentTimeMillis();
 			for (int i = 0; i < n; ++i) {
