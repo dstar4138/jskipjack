@@ -23,7 +23,7 @@ public class SpeedTest {
 			System.out.println("Usage: java SpeedTest [--slow] <num_iterations>");
 			System.exit(1);
 			
-		} else if( args[0] == "--slow") { // RUN SLOW SKIPJACK
+		} else if( args[0].equals("--slow")) { // RUN SLOW SKIPJACK
 			int n = Integer.parseInt(args[1]);
 		    long t1 = System.currentTimeMillis();
 			for (int i = 0; i < n; ++i) {
