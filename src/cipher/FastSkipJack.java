@@ -217,7 +217,7 @@ public class FastSkipJack {
 		}
     	
 		FastSkipJack fsj = new FastSkipJack(key);
-		System.out.println(fsj.Encrypt(message));
+		System.out.printf("%016x%n",fsj.Encrypt(message));
     }
 }
 

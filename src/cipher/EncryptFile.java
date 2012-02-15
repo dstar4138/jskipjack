@@ -3,6 +3,11 @@ package cipher;
 import java.math.BigInteger;
 import java.io.*;
 
+/**
+ * Encrypt a file using basic SkipJack. As parameters 
+ * this takes the key and the file, as well as the name
+ * of the file to output to.
+ */
 public class EncryptFile{
 
 	private static BigInteger MASK = new BigInteger("FF", 16);

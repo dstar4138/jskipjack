@@ -207,7 +207,7 @@ public class SkipJack {
 			key[j]= k.shiftRight(i*8).and(MASK).shortValue();
 		}
     	
-		System.out.println(SkipJack.Encrypt(key,message));
+		System.out.printf("%016x%n",SkipJack.Encrypt(key,message));
     }
 }
 

@@ -4,6 +4,12 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.io.*;
 
+/**
+ * Decrypt a file using basic SkipJack. As parameters, 
+ * it takes the key used to encrypt it, as well as the 
+ * file itself. It also takes the name of the file to 
+ * output to.
+ */
 public class DecryptFile{
 
 	private static BigInteger MASK = new BigInteger("FF", 16);

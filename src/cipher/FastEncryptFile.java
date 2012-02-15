@@ -3,13 +3,19 @@ package cipher;
 import java.math.BigInteger;
 import java.io.*;
 
+/**
+ * Encrypt a file using faster SkipJack. This is 
+ * the non-static version of FastSkipJack. It 
+ * takes the same parameters as EncryptFile, a 
+ * key and the input and output file names.
+ */
 public class FastEncryptFile{
 
 	private static BigInteger MASK = new BigInteger("FF", 16);
 	
     public static void main( String[] args ) throws Exception{
     	if(args.length != 3){
-    		System.out.println("Usage: java EncryptFile <key> <inputfile> <outputfile>");
+    		System.out.println("Usage: java FastEncryptFile <key> <inputfile> <outputfile>");
     		System.exit(1);
     	}
     	

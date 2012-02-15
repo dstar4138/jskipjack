@@ -4,13 +4,19 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.io.*;
 
+/**
+ * Decrypt a file using faster SkipJack. This is 
+ * the non-static version of FastSkipJack. It 
+ * takes the same parameters as DecryptFile, a 
+ * key and the input and output file names.
+ */
 public class FastDecryptFile{
 
 	private static BigInteger MASK = new BigInteger("FF", 16);
 	
     public static void main( String[] args ) throws Exception{
     	if(args.length != 3){
-    		System.out.println("Usage: java DecryptFile <key> <inputfile> <outputfile>");
+    		System.out.println("Usage: java FastDecryptFile <key> <inputfile> <outputfile>");
     		System.exit(1);
     	}
     	

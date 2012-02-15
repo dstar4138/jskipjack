@@ -7,8 +7,20 @@ Class: Cryptography (4003-482 - http://cs.rit.edu/~ark/482)
 
 For a class project our goal was to implement a cipher of our choice in 
 whatever language we would like to. We chose the NIST's SkipJack Cipher,
-particularly the standard 64-bit ECB cipher.
+particularly the standard 64-bit ECB cipher in java.
 
+-- Usage: --
+
+FastSkipJack <key> <plaintext_in_hex>
+SkipJack <key> <plaintext_in_hex>
+
+or file encryption with:
+
+FastEncryptFile <key> <input_file> <output_file>
+FastDecryptFile <key> <input_file> <output_file>
+
+These two also have the option of running the slower version of SkipJack
+by adding the option: EncryptFile and DecryptFile.
 
 
 
